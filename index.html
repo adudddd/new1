@@ -77,6 +77,14 @@
       height: 12px;
       border-radius: 50%;
     }
+    /* Enemy secret (predictive/homing) bullet style */
+    .secret-bullet {
+      background-color: #ff5733;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      box-shadow: 0 0 5px #ff5733;
+    }
     .health-bar-container {
       position: absolute;
       height: 8px;
@@ -429,18 +437,23 @@
     let difficultyTimerId;
     let powerupTimerId;
     let gameMode = 'humanVsCpu'; // 'humanVsCpu', 'cpuVsCpu', or 'survival'
-    let currentWeapon = 'standard';
+    let currentWeapon = 'standard'; // for player
+    // We'll let the enemy choose from our weaponTypes (including the secret power)
     let cpuWeapon = 'standard';
     let player1ShieldActive = false;
     let player2ShieldActive = false;
     let survivorPlayerId = 1;
-    
+
+    // For predictive enemy behavior: track player's previous Y and velocity
+    let player1PrevY = player1Y;
+    let player1Velocity = 0;
+
     // Movement controls
     let keysPressed = {};
     let isMobile = false;
     let touchControlsActive = { up: false, down: false };
 
-    // Weapon properties (including new explosive mode)
+    // Weapon properties (including enemy secret power)
     const weaponTypes = {
       standard: {
         cooldown: 300,
@@ -488,6 +501,17 @@
         class: 'explosive-bullet',
         powerupGain: 12,
         explosive: true
+      },
+      // Secret power for enemy only
+      secret: {
+        cooldown: 1000,
+        damage: 25,
+        speed: 6,
+        size: { width: 14, height: 14 },
+        color: '#ff5733',
+        class: 'secret-bullet',
+        powerupGain: 20,
+        secret: true
       }
     };
 
@@ -500,21 +524,20 @@
     updateShieldPosition(1);
     updateShieldPosition(2);
 
-    // Start game event listeners
+    // Event listeners for game mode and weapon selection
     startBtn.addEventListener('click', startGame);
     resetBtn.addEventListener('click', resetGame);
     humanVsCpuBtn.addEventListener('click', () => setGameMode('humanVsCpu'));
     cpuVsCpuBtn.addEventListener('click', () => setGameMode('cpuVsCpu'));
     survivalModeBtn.addEventListener('click', () => setGameMode('survival'));
 
-    // Weapon selection listeners
     standardWeaponBtn.addEventListener('click', () => setWeapon('standard'));
     spreadWeaponBtn.addEventListener('click', () => setWeapon('spread'));
     rapidWeaponBtn.addEventListener('click', () => setWeapon('rapid'));
     laserWeaponBtn.addEventListener('click', () => setWeapon('laser'));
     explosiveWeaponBtn.addEventListener('click', () => setWeapon('explosive'));
     shieldBtn.addEventListener('click', activateShield);
-    
+
     // Mobile weapon buttons
     weapon1Btn.addEventListener('touchstart', () => setWeapon('standard'));
     weapon2Btn.addEventListener('touchstart', () => setWeapon('spread'));
@@ -669,22 +692,19 @@
       shield2Bar.style.width = '0%';
       powerup1Bar.style.width = '0%';
       powerup2Bar.style.width = '0%';
-      bullets.forEach(bullet => {
-        if (bullet.element.parentNode) bullet.element.parentNode.removeChild(bullet.element);
-      });
+      bullets.forEach(bullet => { if (bullet.element.parentNode) bullet.element.parentNode.removeChild(bullet.element); });
       bullets = [];
-      powerups.forEach(powerup => {
-        if (powerup.element.parentNode) powerup.element.parentNode.removeChild(powerup.element);
-      });
+      powerups.forEach(powerup => { if (powerup.element.parentNode) powerup.element.parentNode.removeChild(powerup.element); });
       powerups = [];
-      document.querySelectorAll('.explosion').forEach(exp => {
-        if (exp.parentNode) exp.parentNode.removeChild(exp);
-      });
+      document.querySelectorAll('.explosion').forEach(exp => { if (exp.parentNode) exp.parentNode.removeChild(exp); });
       player1.style.bottom = player1Y + 'px';
       player2.style.bottom = player2Y + 'px';
       updateShieldPosition(1);
       updateShieldPosition(2);
       gameOver.style.display = 'none';
+      // Reset predictive tracking variables
+      player1PrevY = player1Y;
+      player1Velocity = 0;
     }
 
     function startDifficultyTimer() {
@@ -717,9 +737,7 @@
     function startPowerupSpawner() {
       clearInterval(powerupTimerId);
       powerupTimerId = setInterval(() => {
-        if (gameRunning && powerups.length < 3) {
-          spawnPowerup();
-        }
+        if (gameRunning && powerups.length < 3) { spawnPowerup(); }
       }, 5000);
     }
 
@@ -790,20 +808,19 @@
           }, 10000);
         }
       }
-      if (powerup.element.parentNode) {
-        powerup.element.parentNode.removeChild(powerup.element);
-      }
+      if (powerup.element.parentNode) powerup.element.parentNode.removeChild(powerup.element);
       const index = powerups.findIndex(p => p.element === powerup.element);
       if (index !== -1) powerups.splice(index, 1);
     }
 
+    // Shoot bullet function (handles both players)
     function shootBullet(player, weapon) {
       const now = Date.now();
       if (player === 1) {
         if (now - player1LastShot < weaponTypes[currentWeapon].cooldown) return;
         player1LastShot = now;
       } else {
-        if (now - player2LastShot < weaponTypes[cpuWeapon].cooldown) return;
+        if (now - player2LastShot < weaponTypes[weapon].cooldown) return;
         player2LastShot = now;
       }
       let bulletX, bulletY, direction;
@@ -817,15 +834,22 @@
         direction = -1;
       }
       const weaponConfig = weaponTypes[weapon];
-      if (weapon === 'spread') {
-        const count = weaponConfig.spreadCount || 3;
+      // For enemy secret weapon, use predictive aiming based on player's velocity
+      if (player === 2 && weapon === 'secret') {
+        let predictedY = player1Y + player1Velocity * 10; // Prediction factor
+        let predictedVy = (predictedY - bulletY) / 20;      // Smooth adjustment
+        createBullet(player, bulletX, bulletY, direction, weaponConfig.speed, predictedVy, weaponConfig);
+        return;
+      }
+      // For player spread weapon, fire multiple bullets at different vertical angles
+      if (weapon === 'spread' && player === 1) {
         const angles = [-1, 0, 1];
         angles.forEach(angle => {
           createBullet(player, bulletX, bulletY, direction, weaponConfig.speed, angle, weaponConfig);
         });
-      } else {
-        createBullet(player, bulletX, bulletY, direction, weaponConfig.speed, 0, weaponConfig);
+        return;
       }
+      createBullet(player, bulletX, bulletY, direction, weaponConfig.speed, 0, weaponConfig);
     }
 
     function createBullet(player, x, y, direction, speed, vy, weaponConfig) {
@@ -933,70 +957,74 @@
       explosion.style.left = x + 'px';
       explosion.style.top = y + 'px';
       gameContainer.appendChild(explosion);
-      setTimeout(() => {
-        if (explosion.parentNode) explosion.parentNode.removeChild(explosion);
-      }, 300);
+      setTimeout(() => { if (explosion.parentNode) explosion.parentNode.removeChild(explosion); }, 300);
     }
 
+    // Main game loop
     function gameLoop() {
-      if (gameMode === 'humanVsCpu' || gameMode === 'survival') {
-        moveHumanPlayer();
-      } else {
-        moveAIPlayer1();
-      }
-      moveAIPlayer2();
-      if (gameMode === 'cpuVsCpu' && Math.random() < 0.03) {
-        shootBullet(1, cpuWeapon);
-      }
-      const shootProbability = 0.02 + (difficultyLevel * 0.005);
-      if (Math.random() < shootProbability) {
-        shootBullet(2, cpuWeapon);
-      }
-      moveBullets();
-      checkPowerupCollisions();
-      checkGameOver();
-    }
-
-    function moveHumanPlayer() {
-      let moveSpeed = 5;
-      if (keysPressed['ArrowUp'] || keysPressed['w'] || touchControlsActive.up) player1Y += moveSpeed;
-      if (keysPressed['ArrowDown'] || keysPressed['s'] || touchControlsActive.down) player1Y -= moveSpeed;
-      if (player1Y < 20) player1Y = 20;
-      if (player1Y > gameContainer.clientHeight - 60) player1Y = gameContainer.clientHeight - 60;
-      player1.style.bottom = player1Y + 'px';
-      updateShieldPosition(1);
-    }
-
-    function moveAIPlayer1() {
-      if (Math.random() < 0.02) player1Direction = -player1Direction;
-      player1Y += player1Direction * 3;
-      if (player1Y < 20) { player1Y = 20; player1Direction = 1; }
-      if (player1Y > gameContainer.clientHeight - 60) { player1Y = gameContainer.clientHeight - 60; player1Direction = -1; }
-      player1.style.bottom = player1Y + 'px';
-      updateShieldPosition(1);
-    }
-
-    function moveAIPlayer2() {
-      const moveSpeed = 2 + (difficultyLevel * 0.5);
-      if (difficultyLevel >= 3) {
-        const player1Top = gameContainer.clientHeight - player1.offsetTop - player1.offsetHeight;
-        const player2Top = player2Y;
-        if (player1Top > player2Top + 10) {
-          player2Y += moveSpeed;
-        } else if (player1Top < player2Top - 10) {
-          player2Y -= moveSpeed;
-        } else {
-          if (Math.random() < 0.1) player2Direction = -player2Direction;
-          player2Y += player2Direction * moveSpeed;
-        }
+      // Update player's movement and track velocity for prediction
+      moveHumanPlayer();
+      // Enemy predictive movement when difficulty is high
+      if (difficultyLevel >= 5) {
+        // Smoothly follow player's vertical position
+        player2Y += (player1Y - player2Y) * 0.05;
       } else {
         if (Math.random() < 0.03) player2Direction = -player2Direction;
+        const moveSpeed = 2 + (difficultyLevel * 0.5);
         player2Y += player2Direction * moveSpeed;
       }
       if (player2Y < 20) { player2Y = 20; player2Direction = 1; }
       if (player2Y > gameContainer.clientHeight - 60) { player2Y = gameContainer.clientHeight - 60; player2Direction = -1; }
       player2.style.bottom = player2Y + 'px';
       updateShieldPosition(2);
+
+      // Enemy shooting: choose a weapon randomly;
+      // if difficulty is high, there's a chance to use the secret predictive power.
+      const shootProbability = 0.02 + (difficultyLevel * 0.005);
+      if (Math.random() < shootProbability) {
+        let enemyWeapon;
+        if (difficultyLevel >= 5 && Math.random() < 0.3) {
+          enemyWeapon = 'secret';
+        } else {
+          const weapons = ['standard', 'spread', 'rapid', 'laser', 'explosive'];
+          enemyWeapon = weapons[Math.floor(Math.random() * weapons.length)];
+        }
+        shootBullet(2, enemyWeapon);
+      }
+
+      moveBullets();
+      checkPowerupCollisions();
+      checkGameOver();
+    }
+
+    // Update human player's movement and compute velocity for prediction
+    function moveHumanPlayer() {
+      let moveSpeed = 5;
+      let prevY = player1Y;
+      if (keysPressed['ArrowUp'] || keysPressed['w'] || touchControlsActive.up) player1Y += moveSpeed;
+      if (keysPressed['ArrowDown'] || keysPressed['s'] || touchControlsActive.down) player1Y -= moveSpeed;
+      if (player1Y < 20) player1Y = 20;
+      if (player1Y > gameContainer.clientHeight - 60) player1Y = gameContainer.clientHeight - 60;
+      player1.style.bottom = player1Y + 'px';
+      player1Velocity = player1Y - prevY;  // Calculate velocity for prediction
+      updateShieldPosition(1);
+    }
+
+    function checkPowerupCollisions() {
+      powerups.forEach(powerup => {
+        if (
+          powerup.x >= player1.offsetLeft &&
+          powerup.x <= player1.offsetLeft + player1.offsetWidth &&
+          powerup.y >= player1.offsetTop &&
+          powerup.y <= player1.offsetTop + player1.offsetHeight
+        ) { collectPowerup(1, powerup); }
+        if (
+          powerup.x >= player2.offsetLeft &&
+          powerup.x <= player2.offsetLeft + player2.offsetWidth &&
+          powerup.y >= player2.offsetTop &&
+          powerup.y <= player2.offsetTop + player2.offsetHeight
+        ) { collectPowerup(2, powerup); }
+      });
     }
 
     function checkGameOver() {
@@ -1013,74 +1041,6 @@
         clearInterval(difficultyTimerId);
         clearInterval(powerupTimerId);
       }
-    }
-
-    function checkPowerupCollisions() {
-      powerups.forEach(powerup => {
-        if (
-          powerup.x >= player1.offsetLeft &&
-          powerup.x <= player1.offsetLeft + player1.offsetWidth &&
-          powerup.y >= player1.offsetTop &&
-          powerup.y <= player1.offsetTop + player1.offsetHeight
-        ) {
-          collectPowerup(1, powerup);
-        }
-        if (
-          powerup.x >= player2.offsetLeft &&
-          powerup.x <= player2.offsetLeft + player2.offsetWidth &&
-          powerup.y >= player2.offsetTop &&
-          powerup.y <= player2.offsetTop + player2.offsetHeight
-        ) {
-          collectPowerup(2, powerup);
-        }
-      });
-    }
-
-    function collectPowerup(player, powerup) {
-      if (powerup.type === 'health') {
-        if (player === 1) {
-          player1HealthVal = Math.min(200, player1HealthVal + 30);
-          health1.style.width = (player1HealthVal / 200 * 100) + '%';
-        } else {
-          player2HealthVal = Math.min(200, player2HealthVal + 30);
-          health2.style.width = (player2HealthVal / 200 * 100) + '%';
-        }
-      } else if (powerup.type === 'powerupBoost') {
-        if (player === 1) {
-          player1PowerupMeter = Math.min(100, player1PowerupMeter + 20);
-          powerup1Bar.style.width = player1PowerupMeter + '%';
-        } else {
-          player2PowerupMeter = Math.min(100, player2PowerupMeter + 20);
-          powerup2Bar.style.width = player2PowerupMeter + '%';
-        }
-      } else if (powerup.type === 'shield') {
-        if (player === 1 && !player1ShieldActive) {
-          player1ShieldActive = true;
-          player1Shield = 100;
-          shield1Bar.style.width = '100%';
-          shield1.style.display = 'block';
-          setTimeout(() => {
-            player1ShieldActive = false;
-            player1Shield = 0;
-            shield1Bar.style.width = '0%';
-            shield1.style.display = 'none';
-          }, 10000);
-        } else if (player === 2 && !player2ShieldActive) {
-          player2ShieldActive = true;
-          player2Shield = 100;
-          shield2Bar.style.width = '100%';
-          shield2.style.display = 'block';
-          setTimeout(() => {
-            player2ShieldActive = false;
-            player2Shield = 0;
-            shield2Bar.style.width = '0%';
-            shield2.style.display = 'none';
-          }, 10000);
-        }
-      }
-      if (powerup.element.parentNode) powerup.element.parentNode.removeChild(powerup.element);
-      const index = powerups.findIndex(p => p.element === powerup.element);
-      if (index !== -1) powerups.splice(index, 1);
     }
   </script>
 </body>
