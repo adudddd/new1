@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shooting Game for gadhu</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #333;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 500px;
+            margin: 20px auto;
+            background-color: #222;
+            overflow: hidden;
+            border: 3px solid #444;
+            border-radius: 8px;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+        }
+        #player1 {
+            background-color: #3498db;
+            bottom: 20px;
+            left: 20px;
+        }
+        #player2 {
+            background-color: #e74c3c;
+            bottom: 20px;
+            right: 20px;
+        }
+        .bullet {
+            position: absolute;
+            width: 10px;
+            height: 5px;
+            background-color: #f1c40f;
+            border-radius: 2px;
+        }
+        .health-bar-container {
+            position: absolute;
+            height: 8px;
+            width: 100px;
+            background-color: #555;
+            border-radius: 4px;
+        }
+        .health-bar {
+            position: absolute;
+            height: 8px;
+            width: 100%;
+            background-color: #2ecc71;
+            border-radius: 4px;
+            transition: width 0.2s;
+        }
+        #health1-container {
+            bottom: 5px;
+            left: 20px;
+        }
+        #health2-container {
+            bottom: 5px;
+            right: 20px;
+        }
+        .score {
+            position: absolute;
+            color: white;
+            font-size: 16px;
+            top: 5px;
+        }
+        #score1 {
+            left: 20px;
+        }
+        #score2 {
+            right: 20px;
+        }
+        #difficulty {
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 16px;
+        }
+        #game-mode {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 16px;
+        }
+        #timer {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 14px;
+        }
+        #controls {
+            text-align: center;
+            margin: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .mobile-controls {
+            display: none;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .mobile-control-btn {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
+            user-select: none;
+            margin: 5px;
+        }
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 32px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        .explosion {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: orange;
+            border-radius: 50%;
+            animation: explode 0.3s forwards;
+        }
+        @keyframes explode {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        @media (max-width: 768px) {
+            .mobile-controls {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="player1" class="player"></div>
+        <div id="player2" class="player"></div>
+        <div id="health1-container" class="health-bar-container">
+            <div id="health1" class="health-bar"></div>
+        </div>
+        <div id="health2-container" class="health-bar-container">
+            <div id="health2" class="health-bar"></div>
+        </div>
+        <div id="score1" class="score">Human: 0</div>
+        <div id="score2" class="score">CPU: 0</div>
+        <div id="difficulty">Difficulty: 1</div>
+        <div id="game-mode">Mode: Human vs CPU</div>
+        <div id="timer">Next difficulty: 20s</div>
+        <div id="game-over" class="game-over">Game Over!</div>
+    </div>
+    <div id="controls">
+        <button id="human-vs-cpu-btn">Human vs CPU</button>
+        <button id="cpu-vs-cpu-btn">CPU vs CPU</button>
+        <button id="start-btn">Start Game</button>
+        <button id="reset-btn">Reset Game</button>
+    </div>
+    <div class="mobile-controls">
+        <div>
+            <div id="up-btn" class="mobile-control-btn">↑</div>
+            <div id="down-btn" class="mobile-control-btn">↓</div>
+        </div>
+        <div id="shoot-btn" class="mobile-control-btn">🔫</div>
+    </div>
+
+    <script>
+        // Game variables
+        const player1 = document.getElementById('player1');
+        const player2 = document.getElementById('player2');
+        const health1 = document.getElementById('health1');
+        const health2 = document.getElementById('health2');
+        const score1 = document.getElementById('score1');
+        const score2 = document.getElementById('score2');
+        const difficultyDisplay = document.getElementById('difficulty');
+        const gameModeDisplay = document.getElementById('game-mode');
+        const timerDisplay = document.getElementById('timer');
+        const gameOver = document.getElementById('game-over');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const humanVsCpuBtn = document.getElementById('human-vs-cpu-btn');
+        const cpuVsCpuBtn = document.getElementById('cpu-vs-cpu-btn');
+        const upBtn = document.getElementById('up-btn');
+        const downBtn = document.getElementById('down-btn');
+        const shootBtn = document.getElementById('shoot-btn');
+        const gameContainer = document.getElementById('game-container');
+
+        let player1Health = 100;
+        let player2Health = 100;
+        let player1Score = 0;
+        let player2Score = 0;
+        let bullets = [];
+        let player1Y = 20;
+        let player2Y = 20;
+        let player1Direction = 1;
+        let player2Direction = 1;
+        let gameRunning = false;
+        let gameLoopId;
+        let difficultyLevel = 1;
+        let difficultyTimeLeft = 20;
+        let difficultyTimerId;
+        let gameMode = 'humanVsCpu'; // 'humanVsCpu' or 'cpuVsCpu'
+        
+        // Movement controls
+        let keysPressed = {};
+        let isMobile = false;
+        let touchControlsActive = {
+            up: false,
+            down: false
+        };
+
+        // Initialize player positions
+        player1.style.bottom = player1Y + 'px';
+        player2.style.bottom = player2Y + 'px';
+
+        // Start the game when start button is clicked
+        startBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', resetGame);
+        humanVsCpuBtn.addEventListener('click', () => setGameMode('humanVsCpu'));
+        cpuVsCpuBtn.addEventListener('click', () => setGameMode('cpuVsCpu'));
+
+        // Mobile controls
+        upBtn.addEventListener('touchstart', () => { touchControlsActive.up = true; });
+        upBtn.addEventListener('touchend', () => { touchControlsActive.up = false; });
+        downBtn.addEventListener('touchstart', () => { touchControlsActive.down = true; });
+        downBtn.addEventListener('touchend', () => { touchControlsActive.down = false; });
+        shootBtn.addEventListener('touchstart', () => { 
+            if (gameRunning && gameMode === 'humanVsCpu') {
+                shootBullet(1);
+            }
+        });
+
+        // Mouse click to shoot
+        gameContainer.addEventListener('click', () => {
+            if (gameRunning && gameMode === 'humanVsCpu') {
+                shootBullet(1);
+            }
+        });
+
+        // Keyboard controls
+        window.addEventListener('keydown', (e) => {
+            keysPressed[e.key] = true;
+            
+            // Spacebar to shoot
+            if (e.key === ' ' && gameRunning && gameMode === 'humanVsCpu') {
+                shootBullet(1);
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keysPressed[e.key] = false;
+        });
+
+        function setGameMode(mode) {
+            gameMode = mode;
+            resetGame();
+            
+            if (mode === 'humanVsCpu') {
+                gameModeDisplay.textContent = 'Mode: Human vs CPU';
+                score1.textContent = 'Human: 0';
+                score2.textContent = 'CPU: 0';
+            } else {
+                gameModeDisplay.textContent = 'Mode: CPU vs CPU';
+                score1.textContent = 'Blue: 0';
+                score2.textContent = 'Red: 0';
+            }
+        }
+
+        function startGame() {
+            if (!gameRunning) {
+                gameRunning = true;
+                gameLoopId = setInterval(gameLoop, 20);
+                startDifficultyTimer();
+            }
+        }
+
+        function resetGame() {
+            clearInterval(gameLoopId);
+            clearInterval(difficultyTimerId);
+            gameRunning = false;
+            player1Health = 100;
+            player2Health = 100;
+            player1Score = 0;
+            player2Score = 0;
+            player1Y = 20;
+            player2Y = 20;
+            difficultyLevel = 1;
+            difficultyTimeLeft = 20;
+            
+            // Update displays
+            difficultyDisplay.textContent = 'Difficulty: ' + difficultyLevel;
+            timerDisplay.textContent = 'Next difficulty: ' + difficultyTimeLeft + 's';
+            
+            if (gameMode === 'humanVsCpu') {
+                score1.textContent = 'Human: 0';
+                score2.textContent = 'CPU: 0';
+            } else {
+                score1.textContent = 'Blue: 0';
+                score2.textContent = 'Red: 0';
+            }
+            
+            // Remove all bullets
+            bullets.forEach(bullet => {
+                if (bullet.element.parentNode) {
+                    bullet.element.parentNode.removeChild(bullet.element);
+                }
+            });
+            bullets = [];
+            
+            // Remove all explosions
+            document.querySelectorAll('.explosion').forEach(exp => {
+                exp.parentNode.removeChild(exp);
+            });
+            
+            // Update the display
+            player1.style.bottom = player1Y + 'px';
+            player2.style.bottom = player2Y + 'px';
+            health1.style.width = '100%';
+            health2.style.width = '100%';
+            gameOver.style.display = 'none';
+        }
+
+        function startDifficultyTimer() {
+            difficultyTimeLeft = 20;
+            timerDisplay.textContent = 'Next difficulty: ' + difficultyTimeLeft + 's';
+            
+            clearInterval(difficultyTimerId);
+            difficultyTimerId = setInterval(() => {
+                difficultyTimeLeft--;
+                timerDisplay.textContent = 'Next difficulty: ' + difficultyTimeLeft + 's';
+                
+                if (difficultyTimeLeft <= 0) {
+                    difficultyLevel++;
+                    difficultyDisplay.textContent = 'Difficulty: ' + difficultyLevel;
+                    difficultyTimeLeft = 20;
+                }
+            }, 1000);
+        }
+
+        function gameLoop() {
+            // Human controls or AI movement for player 1
+            if (gameMode === 'humanVsCpu') {
+                moveHumanPlayer();
+            } else {
+                moveAIPlayer1();
+            }
+            
+            // AI movement for player 2
+            moveAIPlayer2();
+            
+            // AI shooting
+            if (gameMode === 'cpuVsCpu' && Math.random() < 0.03) {
+                shootBullet(1);
+            }
+            
+            const shootProbability = 0.02 + (difficultyLevel * 0.005);
+            if (Math.random() < shootProbability) {
+                shootBullet(2);
+            }
+            
+            // Move bullets and check collisions
+            moveBullets();
+            
+            // Check if game is over
+            checkGameOver();
+        }
+
+        function moveHumanPlayer() {
+            let moveSpeed = 5;
+            
+            // Keyboard controls
+            if (keysPressed['ArrowUp'] || keysPressed['w']) {
+                player1Y += moveSpeed;
+            }
+            if (keysPressed['ArrowDown'] || keysPressed['s']) {
+                player1Y -= moveSpeed;
+            }
+            
+            // Touch controls
+            if (touchControlsActive.up) {
+                player1Y += moveSpeed;
+            }
+            if (touchControlsActive.down) {
+                player1Y -= moveSpeed;
+            }
+            
+            // Boundary check
+            if (player1Y < 20) {
+                player1Y = 20;
+            } else if (player1Y > gameContainer.clientHeight - 60) {
+                player1Y = gameContainer.clientHeight - 60;
+            }
+            
+            player1.style.bottom = player1Y + 'px';
+        }
+
+        function moveAIPlayer1() {
+            // AI movement
+            if (Math.random() < 0.02) {
+                player1Direction = -player1Direction;
+            }
+            
+            player1Y += player1Direction * 3;
+            
+            // Boundary check
+            if (player1Y < 20) {
+                player1Y = 20;
+                player1Direction = 1;
+            } else if (player1Y > gameContainer.clientHeight - 60) {
+                player1Y = gameContainer.clientHeight - 60;
+                player1Direction = -1;
+            }
+            
+            player1.style.bottom = player1Y + 'px';
+        }
+
+        function moveAIPlayer2() {
+            // AI movement becomes smarter with difficulty
+            const moveSpeed = 2 + (difficultyLevel * 0.5);
+            
+            // Simple tracking behavior
+            if (difficultyLevel >= 3) {
+                // Track player 1's position
+                const player1Top = gameContainer.clientHeight - player1.offsetTop - player1.offsetHeight;
+                const player2Top = player2Y;
+                
+                if (player1Top > player2Top + 10) {
+                    player2Y += moveSpeed;
+                } else if (player1Top < player2Top - 10) {
+                    player2Y -= moveSpeed;
+                } else {
+                    // Random movement when close to player
+                    if (Math.random() < 0.1) {
+                        player2Direction = -player2Direction;
+                    }
+                    player2Y += player2Direction * moveSpeed;
+                }
+            } else {
+                // Random movement at lower difficulties
+                if (Math.random() < 0.03) {
+                    player2Direction = -player2Direction;
+                }
+                player2Y += player2Direction * moveSpeed;
+            }
+            
+            // Boundary check
+            if (player2Y < 20) {
+                player2Y = 20;
+                player2Direction = 1;
+            } else if (player2Y > gameContainer.clientHeight - 60) {
+                player2Y = gameContainer.clientHeight - 60;
+                player2Direction = -1;
+            }
+            
+            player2.style.bottom = player2Y + 'px';
+        }
+
+        function shootBullet(player) {
+            const bullet = document.createElement('div');
+            bullet.className = 'bullet';
+            gameContainer.appendChild(bullet);
+            
+            let bulletX, bulletY, bulletDirection, bulletSpeed;
+            
+            // Base bullet speed increases with difficulty for CPU
+            bulletSpeed = player === 2 ? 5 + (difficultyLevel * 0.5) : 5;
+            
+            if (player === 1) {
+                bulletX = player1.offsetLeft + player1.offsetWidth;
+                bulletY = player1.offsetTop + player1.offsetHeight / 2;
+                bulletDirection = 1;
+            } else {
+                bulletX = player2.offsetLeft;
+                bulletY = player2.offsetTop + player2.offsetHeight / 2;
+                bulletDirection = -1;
+            }
+            
+            bullet.style.left = bulletX + 'px';
+            bullet.style.top = bulletY + 'px';
+            
+            bullets.push({
+                element: bullet,
+                x: bulletX,
+                y: bulletY,
+                direction: bulletDirection,
+                player: player,
+                speed: bulletSpeed
+            });
+        }
+
+        function moveBullets() {
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                bullet.x += bullet.direction * bullet.speed;
+                bullet.element.style.left = bullet.x + 'px';
+                
+                // Check if bullet is out of bounds
+                if (bullet.x < 0 || bullet.x > gameContainer.clientWidth) {
+                    gameContainer.removeChild(bullet.element);
+                    bullets.splice(i, 1);
+                    continue;
+                }
+                
+                // Check collision with player1
+                if (bullet.player === 2 && 
+                    bullet.x <= player1.offsetLeft + player1.offsetWidth &&
+                    bullet.x >= player1.offsetLeft &&
+                    bullet.y >= player1.offsetTop &&
+                    bullet.y <= player1.offsetTop + player1.offsetHeight) {
+                    
+                    createExplosion(bullet.x, bullet.y);
+                    gameContainer.removeChild(bullet.element);
+                    bullets.splice(i, 1);
+                    
+                    // Damage increases with difficulty
+                    const damage = 5 + (difficultyLevel * 1.5);
+                    player1Health -= damage;
+                    player1Health = Math.max(0, player1Health);
+                    health1.style.width = player1Health + '%';
+                    continue;
+                }
+                
+                // Check collision with player2
+                if (bullet.player === 1 && 
+                    bullet.x + bullet.element.offsetWidth >= player2.offsetLeft &&
+                    bullet.x <= player2.offsetLeft + player2.offsetWidth &&
+                    bullet.y >= player2.offsetTop &&
+                    bullet.y <= player2.offsetTop + player2.offsetHeight) {
+                    
+                    createExplosion(bullet.x, bullet.y);
+                    gameContainer.removeChild(bullet.element);
+                    bullets.splice(i, 1);
+                    
+                    // CPU health decreases faster at lower difficulties
+                    const damage = 10 - (difficultyLevel * 0.5);
+                    player2Health -= Math.max(5, damage);
+                    player2Health = Math.max(0, player2Health);
+                    health2.style.width = player2Health + '%';
+                    continue;
+                }
+            }
+        }
+
+        function createExplosion(x, y) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.style.left = x + 'px';
+            explosion.style.top = y + 'px';
+            gameContainer.appendChild(explosion);
+            
+            setTimeout(() => {
+                if (explosion.parentNode) {
+                    explosion.parentNode.removeChild(explosion);
+                }
+            }, 300);
+        }
+
+        function checkGameOver() {
+            if (player1Health <= 0) {
+                player2Score++;
+                if (gameMode === 'humanVsCpu') {
+                    score2.textContent = 'CPU: ' + player2Score;
+                    endRound('CPU wins this round!');
+                } else {
+                    score2.textContent = 'Red: ' + player2Score;
+                    endRound('Red player wins this round!');
+                }
+            } else if (player2Health <= 0) {
+                player1Score++;
+                if (gameMode === 'humanVsCpu') {
+                    score1.textContent = 'Human: ' + player1Score;
+                    endRound('Human wins this round!');
+                } else {
+                    score1.textContent = 'Blue: ' + player1Score;
+                    endRound('Blue player wins this round!');
+                }
+            }
+        }
+
+        function endRound(message) {
+            clearInterval(gameLoopId);
+            clearInterval(difficultyTimerId);
+            gameRunning = false;
+            gameOver.textContent = message;
+            gameOver.style.display = 'block';
+            
+            // Reset health for next round
+            setTimeout(() => {
+                if (!gameRunning) {
+                    player1Health = 100;
+                    player2Health = 100;
+                    health1.style.width = '100%';
+                    health2.style.width = '100%';
+                    gameOver.style.display = 'none';
+                }
+            }, 2000);
+        }
+
+        // Detect if mobile
+        function checkMobile() {
+            isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                document.querySelector('.mobile-controls').style.display = 'flex';
+            }
+        }
+
+        // Start the game automatically
+        window.onload = function() {
+            checkMobile();
+            resetGame();
+            setGameMode('humanVsCpu');
+        };
+    </script>
+</body>
+</html>
