@@ -1,664 +1,1087 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shooting Game for gadhu</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #333;
-            font-family: Arial, sans-serif;
-        }
-        #game-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            height: 500px;
-            margin: 20px auto;
-            background-color: #222;
-            overflow: hidden;
-            border: 3px solid #444;
-            border-radius: 8px;
-            touch-action: manipulation;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-        .player {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-radius: 5px;
-        }
-        #player1 {
-            background-color: #3498db;
-            bottom: 20px;
-            left: 20px;
-        }
-        #player2 {
-            background-color: #e74c3c;
-            bottom: 20px;
-            right: 20px;
-        }
-        .bullet {
-            position: absolute;
-            width: 10px;
-            height: 5px;
-            background-color: #f1c40f;
-            border-radius: 2px;
-        }
-        .health-bar-container {
-            position: absolute;
-            height: 8px;
-            width: 100px;
-            background-color: #555;
-            border-radius: 4px;
-        }
-        .health-bar {
-            position: absolute;
-            height: 8px;
-            width: 100%;
-            background-color: #2ecc71;
-            border-radius: 4px;
-            transition: width 0.2s;
-        }
-        #health1-container {
-            bottom: 5px;
-            left: 20px;
-        }
-        #health2-container {
-            bottom: 5px;
-            right: 20px;
-        }
-        .score {
-            position: absolute;
-            color: white;
-            font-size: 16px;
-            top: 5px;
-        }
-        #score1 {
-            left: 20px;
-        }
-        #score2 {
-            right: 20px;
-        }
-        #difficulty {
-            position: absolute;
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 16px;
-        }
-        #game-mode {
-            position: absolute;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 16px;
-        }
-        #timer {
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 14px;
-        }
-        #controls {
-            text-align: center;
-            margin: 10px;
-        }
-        button {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .mobile-controls {
-            display: none;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .mobile-control-btn {
-            width: 60px;
-            height: 60px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            color: white;
-            user-select: none;
-            margin: 5px;
-        }
-        .game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 32px;
-            text-align: center;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 10px;
-            display: none;
-        }
-        .explosion {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background-color: orange;
-            border-radius: 50%;
-            animation: explode 0.3s forwards;
-        }
-        @keyframes explode {
-            0% { transform: scale(0.5); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-        @media (max-width: 768px) {
-            .mobile-controls {
-                display: flex;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enhanced Shooting Game - Multiple Powers</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #333;
+      font-family: Arial, sans-serif;
+    }
+    #game-container {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      height: 500px;
+      margin: 20px auto;
+      background-color: #222;
+      overflow: hidden;
+      border: 3px solid #444;
+      border-radius: 8px;
+      touch-action: manipulation;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    .player {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 5px;
+      transition: box-shadow 0.3s;
+    }
+    #player1 {
+      background-color: #3498db;
+      bottom: 20px;
+      left: 20px;
+    }
+    #player2 {
+      background-color: #e74c3c;
+      bottom: 20px;
+      right: 20px;
+    }
+    .bullet {
+      position: absolute;
+      border-radius: 2px;
+    }
+    .standard-bullet {
+      background-color: #f1c40f;
+      width: 10px;
+      height: 5px;
+    }
+    .spread-bullet {
+      background-color: #2ecc71;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .rapid-bullet {
+      background-color: #9b59b6;
+      width: 6px;
+      height: 3px;
+    }
+    .laser-bullet {
+      background-color: #1abc9c;
+      width: 15px;
+      height: 3px;
+      box-shadow: 0 0 5px #1abc9c;
+    }
+    .explosive-bullet {
+      background-color: #e67e22;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .health-bar-container {
+      position: absolute;
+      height: 8px;
+      width: 150px;
+      background-color: #555;
+      border-radius: 4px;
+    }
+    .health-bar {
+      position: absolute;
+      height: 8px;
+      width: 100%;
+      background-color: #2ecc71;
+      border-radius: 4px;
+      transition: width 0.2s;
+    }
+    .shield-bar {
+      position: absolute;
+      height: 8px;
+      width: 0%;
+      background-color: #3498db;
+      border-radius: 4px;
+      opacity: 0.7;
+      transition: width 0.2s;
+    }
+    .powerup-bar-container {
+      position: absolute;
+      height: 5px;
+      width: 150px;
+      background-color: #555;
+      border-radius: 4px;
+    }
+    .powerup-bar {
+      position: absolute;
+      height: 5px;
+      width: 0%;
+      background-color: #f39c12;
+      border-radius: 4px;
+      transition: width 0.2s;
+    }
+    #health1-container {
+      bottom: 18px;
+      left: 20px;
+    }
+    #health2-container {
+      bottom: 18px;
+      right: 20px;
+    }
+    #shield1-container {
+      bottom: 29px;
+      left: 20px;
+    }
+    #shield2-container {
+      bottom: 29px;
+      right: 20px;
+    }
+    #powerup1-container {
+      bottom: 7px;
+      left: 20px;
+    }
+    #powerup2-container {
+      bottom: 7px;
+      right: 20px;
+    }
+    .score {
+      position: absolute;
+      color: white;
+      font-size: 16px;
+      top: 5px;
+    }
+    #score1 {
+      left: 20px;
+    }
+    #score2 {
+      right: 20px;
+    }
+    #difficulty {
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 16px;
+    }
+    #game-mode {
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 16px;
+    }
+    #weapon-info {
+      position: absolute;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 14px;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 3px 10px;
+      border-radius: 15px;
+    }
+    #timer {
+      position: absolute;
+      bottom: 7px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 14px;
+    }
+    #game-over {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 32px;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+    }
+    .explosion {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background-color: orange;
+      border-radius: 50%;
+      animation: explode 0.3s forwards;
+    }
+    @keyframes explode {
+      0% { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+    .powerup {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.8; }
+    }
+    .shield {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: rgba(52, 152, 219, 0.3);
+      border: 2px solid rgba(52, 152, 219, 0.6);
+      box-shadow: 0 0 10px #3498db;
+      display: none;
+    }
+    #controls {
+      text-align: center;
+      margin: 10px;
+    }
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .weapon-btn {
+      background-color: #3498db;
+      padding: 8px 15px;
+      font-size: 14px;
+    }
+    .mobile-controls {
+      display: none;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .mobile-control-btn {
+      width: 60px;
+      height: 60px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      color: white;
+      user-select: none;
+      margin: 5px;
+    }
+    .mobile-weapon-btn {
+      width: 40px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      color: white;
+      user-select: none;
+      margin: 3px;
+    }
+    @media (max-width: 768px) {
+      .mobile-controls {
+        display: flex;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="player1" class="player"></div>
-        <div id="player2" class="player"></div>
-        <div id="health1-container" class="health-bar-container">
-            <div id="health1" class="health-bar"></div>
-        </div>
-        <div id="health2-container" class="health-bar-container">
-            <div id="health2" class="health-bar"></div>
-        </div>
-        <div id="score1" class="score">Human: 0</div>
-        <div id="score2" class="score">CPU: 0</div>
-        <div id="difficulty">Difficulty: 1</div>
-        <div id="game-mode">Mode: Human vs CPU</div>
-        <div id="timer">Next difficulty: 20s</div>
-        <div id="game-over" class="game-over">Game Over!</div>
+  <div id="game-container">
+    <div id="player1" class="player"></div>
+    <div id="player2" class="player"></div>
+    <div id="shield1" class="shield"></div>
+    <div id="shield2" class="shield"></div>
+    <div id="health1-container" class="health-bar-container">
+      <div id="health1" class="health-bar"></div>
     </div>
-    <div id="controls">
-        <button id="human-vs-cpu-btn">gadhu vs CPU</button>
-        <button id="cpu-vs-cpu-btn">CPU vs CPU</button>
-        <button id="start-btn">Start Game</button>
-        <button id="reset-btn">Reset Game</button>
+    <div id="health2-container" class="health-bar-container">
+      <div id="health2" class="health-bar"></div>
     </div>
-    <div class="mobile-controls">
-        <div>
-            <div id="up-btn" class="mobile-control-btn">↑</div>
-            <div id="down-btn" class="mobile-control-btn">↓</div>
-        </div>
-        <div id="shoot-btn" class="mobile-control-btn">🔫</div>
+    <div id="shield1-container" class="health-bar-container">
+      <div id="shield1-bar" class="shield-bar"></div>
     </div>
+    <div id="shield2-container" class="health-bar-container">
+      <div id="shield2-bar" class="shield-bar"></div>
+    </div>
+    <div id="powerup1-container" class="powerup-bar-container">
+      <div id="powerup1-bar" class="powerup-bar"></div>
+    </div>
+    <div id="powerup2-container" class="powerup-bar-container">
+      <div id="powerup2-bar" class="powerup-bar"></div>
+    </div>
+    <div id="score1" class="score">Human: 0</div>
+    <div id="score2" class="score">CPU: 0</div>
+    <div id="difficulty">Difficulty: 1</div>
+    <div id="game-mode">Mode: Human vs CPU</div>
+    <div id="weapon-info">Weapon: Standard</div>
+    <div id="timer">Next difficulty: 20s</div>
+    <div id="game-over" class="game-over">Game Over!</div>
+  </div>
+  <div id="controls">
+    <button id="human-vs-cpu-btn">Human vs CPU</button>
+    <button id="cpu-vs-cpu-btn">CPU vs CPU</button>
+    <button id="survival-mode-btn">Survival Mode</button>
+    <button id="start-btn">Start Game</button>
+    <button id="reset-btn">Reset Game</button>
+    <div>
+      <button id="standard-weapon" class="weapon-btn">Standard</button>
+      <button id="spread-weapon" class="weapon-btn">Spread</button>
+      <button id="rapid-weapon" class="weapon-btn">Rapid</button>
+      <button id="laser-weapon" class="weapon-btn">Laser</button>
+      <button id="explosive-weapon" class="weapon-btn">Explosive</button>
+      <button id="shield-btn" class="weapon-btn">Shield</button>
+    </div>
+  </div>
+  <div class="mobile-controls">
+    <div>
+      <div id="up-btn" class="mobile-control-btn">↑</div>
+      <div id="down-btn" class="mobile-control-btn">↓</div>
+    </div>
+    <div>
+      <div id="weapon1-btn" class="mobile-weapon-btn">S</div>
+      <div id="weapon2-btn" class="mobile-weapon-btn">P</div>
+      <div id="weapon3-btn" class="mobile-weapon-btn">R</div>
+      <div id="weapon4-btn" class="mobile-weapon-btn">L</div>
+      <div id="explosive-mobile-btn" class="mobile-weapon-btn">E</div>
+      <div id="shield-mobile-btn" class="mobile-weapon-btn">🛡️</div>
+    </div>
+    <div id="shoot-btn" class="mobile-control-btn">🔫</div>
+  </div>
+  <script>
+    // Game elements
+    const player1 = document.getElementById('player1');
+    const player2 = document.getElementById('player2');
+    const shield1 = document.getElementById('shield1');
+    const shield2 = document.getElementById('shield2');
+    const health1 = document.getElementById('health1');
+    const health2 = document.getElementById('health2');
+    const shield1Bar = document.getElementById('shield1-bar');
+    const shield2Bar = document.getElementById('shield2-bar');
+    const powerup1Bar = document.getElementById('powerup1-bar');
+    const powerup2Bar = document.getElementById('powerup2-bar');
+    const score1 = document.getElementById('score1');
+    const score2 = document.getElementById('score2');
+    const difficultyDisplay = document.getElementById('difficulty');
+    const gameModeDisplay = document.getElementById('game-mode');
+    const weaponInfo = document.getElementById('weapon-info');
+    const timerDisplay = document.getElementById('timer');
+    const gameOver = document.getElementById('game-over');
+    const gameContainer = document.getElementById('game-container');
 
-    <script>
-        // Game variables
-        const player1 = document.getElementById('player1');
-        const player2 = document.getElementById('player2');
-        const health1 = document.getElementById('health1');
-        const health2 = document.getElementById('health2');
-        const score1 = document.getElementById('score1');
-        const score2 = document.getElementById('score2');
-        const difficultyDisplay = document.getElementById('difficulty');
-        const gameModeDisplay = document.getElementById('game-mode');
-        const timerDisplay = document.getElementById('timer');
-        const gameOver = document.getElementById('game-over');
-        const startBtn = document.getElementById('start-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        const humanVsCpuBtn = document.getElementById('human-vs-cpu-btn');
-        const cpuVsCpuBtn = document.getElementById('cpu-vs-cpu-btn');
-        const upBtn = document.getElementById('up-btn');
-        const downBtn = document.getElementById('down-btn');
-        const shootBtn = document.getElementById('shoot-btn');
-        const gameContainer = document.getElementById('game-container');
+    // Control elements
+    const startBtn = document.getElementById('start-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const humanVsCpuBtn = document.getElementById('human-vs-cpu-btn');
+    const cpuVsCpuBtn = document.getElementById('cpu-vs-cpu-btn');
+    const survivalModeBtn = document.getElementById('survival-mode-btn');
+    const upBtn = document.getElementById('up-btn');
+    const downBtn = document.getElementById('down-btn');
+    const shootBtn = document.getElementById('shoot-btn');
 
-        let player1Health = 100;
-        let player2Health = 100;
-        let player1Score = 0;
-        let player2Score = 0;
-        let bullets = [];
-        let player1Y = 20;
-        let player2Y = 20;
-        let player1Direction = 1;
-        let player2Direction = 1;
-        let gameRunning = false;
-        let gameLoopId;
-        let difficultyLevel = 1;
-        let difficultyTimeLeft = 20;
-        let difficultyTimerId;
-        let gameMode = 'humanVsCpu'; // 'humanVsCpu' or 'cpuVsCpu'
-        
-        // Movement controls
-        let keysPressed = {};
-        let isMobile = false;
-        let touchControlsActive = {
-            up: false,
-            down: false
-        };
+    // Weapon buttons
+    const standardWeaponBtn = document.getElementById('standard-weapon');
+    const spreadWeaponBtn = document.getElementById('spread-weapon');
+    const rapidWeaponBtn = document.getElementById('rapid-weapon');
+    const laserWeaponBtn = document.getElementById('laser-weapon');
+    const explosiveWeaponBtn = document.getElementById('explosive-weapon');
+    const shieldBtn = document.getElementById('shield-btn');
+    // Mobile weapon buttons
+    const weapon1Btn = document.getElementById('weapon1-btn');
+    const weapon2Btn = document.getElementById('weapon2-btn');
+    const weapon3Btn = document.getElementById('weapon3-btn');
+    const weapon4Btn = document.getElementById('weapon4-btn');
+    const explosiveMobileBtn = document.getElementById('explosive-mobile-btn');
+    const shieldMobileBtn = document.getElementById('shield-mobile-btn');
 
-        // Initialize player positions
-        player1.style.bottom = player1Y + 'px';
-        player2.style.bottom = player2Y + 'px';
+    // Game variables
+    let player1HealthVal = 200;
+    let player2HealthVal = 200;
+    let player1Shield = 0;
+    let player2Shield = 0;
+    let player1PowerupMeter = 0;
+    let player2PowerupMeter = 0;
+    let player1Score = 0;
+    let player2Score = 0;
+    let bullets = [];
+    let powerups = [];
+    let player1Y = 20;
+    let player2Y = 20;
+    let player1Direction = 1;
+    let player2Direction = 1;
+    let gameRunning = false;
+    let gameLoopId;
+    let difficultyLevel = 1;
+    let difficultyTimeLeft = 20;
+    let difficultyTimerId;
+    let powerupTimerId;
+    let gameMode = 'humanVsCpu'; // 'humanVsCpu', 'cpuVsCpu', or 'survival'
+    let currentWeapon = 'standard';
+    let cpuWeapon = 'standard';
+    let player1ShieldActive = false;
+    let player2ShieldActive = false;
+    let survivorPlayerId = 1;
+    
+    // Movement controls
+    let keysPressed = {};
+    let isMobile = false;
+    let touchControlsActive = { up: false, down: false };
 
-        // Start the game when start button is clicked
-        startBtn.addEventListener('click', startGame);
-        resetBtn.addEventListener('click', resetGame);
-        humanVsCpuBtn.addEventListener('click', () => setGameMode('humanVsCpu'));
-        cpuVsCpuBtn.addEventListener('click', () => setGameMode('cpuVsCpu'));
+    // Weapon properties (including new explosive mode)
+    const weaponTypes = {
+      standard: {
+        cooldown: 300,
+        damage: 10,
+        speed: 5,
+        size: { width: 10, height: 5 },
+        color: '#f1c40f',
+        class: 'standard-bullet',
+        powerupGain: 5
+      },
+      spread: {
+        cooldown: 600,
+        damage: 5,
+        speed: 4,
+        size: { width: 8, height: 8 },
+        color: '#2ecc71',
+        class: 'spread-bullet',
+        spreadCount: 3,
+        powerupGain: 10
+      },
+      rapid: {
+        cooldown: 100,
+        damage: 3,
+        speed: 6,
+        size: { width: 6, height: 3 },
+        color: '#9b59b6',
+        class: 'rapid-bullet',
+        powerupGain: 2
+      },
+      laser: {
+        cooldown: 800,
+        damage: 20,
+        speed: 8,
+        size: { width: 15, height: 3 },
+        color: '#1abc9c',
+        class: 'laser-bullet',
+        powerupGain: 15
+      },
+      explosive: {
+        cooldown: 700,
+        damage: 15,
+        speed: 5,
+        size: { width: 12, height: 12 },
+        color: '#e67e22',
+        class: 'explosive-bullet',
+        powerupGain: 12,
+        explosive: true
+      }
+    };
 
-        // Mobile controls
-        upBtn.addEventListener('touchstart', () => { touchControlsActive.up = true; });
-        upBtn.addEventListener('touchend', () => { touchControlsActive.up = false; });
-        downBtn.addEventListener('touchstart', () => { touchControlsActive.down = true; });
-        downBtn.addEventListener('touchend', () => { touchControlsActive.down = false; });
-        shootBtn.addEventListener('touchstart', () => { 
-            if (gameRunning && gameMode === 'humanVsCpu') {
-                shootBullet(1);
-            }
+    let player1LastShot = 0;
+    let player2LastShot = 0;
+
+    // Initialize player positions and shields
+    player1.style.bottom = player1Y + 'px';
+    player2.style.bottom = player2Y + 'px';
+    updateShieldPosition(1);
+    updateShieldPosition(2);
+
+    // Start game event listeners
+    startBtn.addEventListener('click', startGame);
+    resetBtn.addEventListener('click', resetGame);
+    humanVsCpuBtn.addEventListener('click', () => setGameMode('humanVsCpu'));
+    cpuVsCpuBtn.addEventListener('click', () => setGameMode('cpuVsCpu'));
+    survivalModeBtn.addEventListener('click', () => setGameMode('survival'));
+
+    // Weapon selection listeners
+    standardWeaponBtn.addEventListener('click', () => setWeapon('standard'));
+    spreadWeaponBtn.addEventListener('click', () => setWeapon('spread'));
+    rapidWeaponBtn.addEventListener('click', () => setWeapon('rapid'));
+    laserWeaponBtn.addEventListener('click', () => setWeapon('laser'));
+    explosiveWeaponBtn.addEventListener('click', () => setWeapon('explosive'));
+    shieldBtn.addEventListener('click', activateShield);
+    
+    // Mobile weapon buttons
+    weapon1Btn.addEventListener('touchstart', () => setWeapon('standard'));
+    weapon2Btn.addEventListener('touchstart', () => setWeapon('spread'));
+    weapon3Btn.addEventListener('touchstart', () => setWeapon('rapid'));
+    weapon4Btn.addEventListener('touchstart', () => setWeapon('laser'));
+    explosiveMobileBtn.addEventListener('touchstart', () => setWeapon('explosive'));
+    shieldMobileBtn.addEventListener('touchstart', activateShield);
+
+    // Mobile movement and shooting controls
+    upBtn.addEventListener('touchstart', () => { touchControlsActive.up = true; });
+    upBtn.addEventListener('touchend', () => { touchControlsActive.up = false; });
+    downBtn.addEventListener('touchstart', () => { touchControlsActive.down = true; });
+    downBtn.addEventListener('touchend', () => { touchControlsActive.down = false; });
+    shootBtn.addEventListener('touchstart', () => { 
+      if (gameRunning && (gameMode === 'humanVsCpu' || (gameMode === 'survival' && survivorPlayerId === 1))) {
+        shootBullet(1, currentWeapon);
+      }
+    });
+
+    // Mouse click shooting
+    gameContainer.addEventListener('click', () => {
+      if (gameRunning && (gameMode === 'humanVsCpu' || (gameMode === 'survival' && survivorPlayerId === 1))) {
+        shootBullet(1, currentWeapon);
+      }
+    });
+
+    // Keyboard controls for movement, shooting, and weapon switching
+    window.addEventListener('keydown', (e) => {
+      keysPressed[e.key] = true;
+      if (e.key === ' ' && gameRunning && (gameMode === 'humanVsCpu' || (gameMode === 'survival' && survivorPlayerId === 1))) {
+        shootBullet(1, currentWeapon);
+      }
+      if (gameRunning && (gameMode === 'humanVsCpu' || (gameMode === 'survival' && survivorPlayerId === 1))) {
+        switch(e.key) {
+          case '1': setWeapon('standard'); break;
+          case '2': setWeapon('spread'); break;
+          case '3': setWeapon('rapid'); break;
+          case '4': setWeapon('laser'); break;
+          case '5': setWeapon('explosive'); break;
+          case '6': activateShield(); break;
+        }
+      }
+    });
+    window.addEventListener('keyup', (e) => {
+      keysPressed[e.key] = false;
+    });
+
+    function setGameMode(mode) {
+      gameMode = mode;
+      resetGame();
+      if (mode === 'humanVsCpu') {
+        gameModeDisplay.textContent = 'Mode: Human vs CPU';
+        score1.textContent = 'Human: 0';
+        score2.textContent = 'CPU: 0';
+      } else if (mode === 'cpuVsCpu') {
+        gameModeDisplay.textContent = 'Mode: CPU vs CPU';
+        score1.textContent = 'Blue: 0';
+        score2.textContent = 'Red: 0';
+      } else if (mode === 'survival') {
+        gameModeDisplay.textContent = 'Mode: Survival';
+        score1.textContent = 'Waves: 0';
+        score2.textContent = 'Enemies: 10';
+        survivorPlayerId = 1;
+      }
+    }
+
+    function setWeapon(weapon) {
+      if (!gameRunning || gameMode === 'cpuVsCpu') return;
+      currentWeapon = weapon;
+      weaponInfo.textContent = 'Weapon: ' + weapon.charAt(0).toUpperCase() + weapon.slice(1);
+    }
+
+    function activateShield() {
+      if (!gameRunning || gameMode === 'cpuVsCpu') return;
+      if (player1PowerupMeter >= 100 && !player1ShieldActive) {
+        player1ShieldActive = true;
+        player1Shield = 100;
+        shield1Bar.style.width = '100%';
+        shield1.style.display = 'block';
+        player1PowerupMeter = 0;
+        powerup1Bar.style.width = '0%';
+        player1.style.boxShadow = '0 0 15px #3498db';
+        setTimeout(() => {
+          player1ShieldActive = false;
+          player1Shield = 0;
+          shield1Bar.style.width = '0%';
+          shield1.style.display = 'none';
+          player1.style.boxShadow = 'none';
+        }, 10000);
+      }
+    }
+
+    function updateShieldPosition(playerNum) {
+      if (playerNum === 1) {
+        shield1.style.left = (player1.offsetLeft - 5) + 'px';
+        shield1.style.top = (player1.offsetTop - 5) + 'px';
+      } else {
+        shield2.style.left = (player2.offsetLeft - 5) + 'px';
+        shield2.style.top = (player2.offsetTop - 5) + 'px';
+      }
+    }
+
+    function startGame() {
+      if (!gameRunning) {
+        gameRunning = true;
+        gameLoopId = setInterval(gameLoop, 20);
+        startDifficultyTimer();
+        startPowerupSpawner();
+      }
+    }
+
+    function resetGame() {
+      clearInterval(gameLoopId);
+      clearInterval(difficultyTimerId);
+      clearInterval(powerupTimerId);
+      gameRunning = false;
+      player1HealthVal = 200;
+      player2HealthVal = 200;
+      player1Shield = 0;
+      player2Shield = 0;
+      player1PowerupMeter = 0;
+      player2PowerupMeter = 0;
+      player1Score = 0;
+      player2Score = 0;
+      player1Y = 20;
+      player2Y = 20;
+      difficultyLevel = 1;
+      difficultyTimeLeft = 20;
+      player1ShieldActive = false;
+      player2ShieldActive = false;
+      shield1.style.display = 'none';
+      shield2.style.display = 'none';
+      player1.style.boxShadow = 'none';
+      player2.style.boxShadow = 'none';
+      difficultyDisplay.textContent = 'Difficulty: ' + difficultyLevel;
+      timerDisplay.textContent = 'Next difficulty: ' + difficultyTimeLeft + 's';
+      weaponInfo.textContent = 'Weapon: Standard';
+      currentWeapon = 'standard';
+      if (gameMode === 'humanVsCpu') {
+        score1.textContent = 'Human: 0';
+        score2.textContent = 'CPU: 0';
+      } else if (gameMode === 'cpuVsCpu') {
+        score1.textContent = 'Blue: 0';
+        score2.textContent = 'Red: 0';
+      } else if (gameMode === 'survival') {
+        score1.textContent = 'Waves: 0';
+        score2.textContent = 'Enemies: 10';
+      }
+      health1.style.width = '100%';
+      health2.style.width = '100%';
+      shield1Bar.style.width = '0%';
+      shield2Bar.style.width = '0%';
+      powerup1Bar.style.width = '0%';
+      powerup2Bar.style.width = '0%';
+      bullets.forEach(bullet => {
+        if (bullet.element.parentNode) bullet.element.parentNode.removeChild(bullet.element);
+      });
+      bullets = [];
+      powerups.forEach(powerup => {
+        if (powerup.element.parentNode) powerup.element.parentNode.removeChild(powerup.element);
+      });
+      powerups = [];
+      document.querySelectorAll('.explosion').forEach(exp => {
+        if (exp.parentNode) exp.parentNode.removeChild(exp);
+      });
+      player1.style.bottom = player1Y + 'px';
+      player2.style.bottom = player2Y + 'px';
+      updateShieldPosition(1);
+      updateShieldPosition(2);
+      gameOver.style.display = 'none';
+    }
+
+    function startDifficultyTimer() {
+      difficultyTimeLeft = 20;
+      timerDisplay.textContent = 'Next difficulty: ' + difficultyTimeLeft + 's';
+      clearInterval(difficultyTimerId);
+      difficultyTimerId = setInterval(() => {
+        difficultyTimeLeft--;
+        timerDisplay.textContent = 'Next difficulty: ' + difficultyTimeLeft + 's';
+        if (difficultyTimeLeft <= 0) {
+          difficultyLevel++;
+          difficultyDisplay.textContent = 'Difficulty: ' + difficultyLevel;
+          difficultyTimeLeft = 20;
+          if (gameMode === 'survival' && gameRunning) {
+            spawnSurvivalWave();
+          }
+        }
+      }, 1000);
+    }
+
+    function spawnSurvivalWave() {
+      player1Score++;
+      score1.textContent = 'Waves: ' + player1Score;
+      const enemyCount = 5 + (player1Score * 2);
+      score2.textContent = 'Enemies: ' + enemyCount;
+      player1HealthVal = Math.min(200, player1HealthVal + 30);
+      health1.style.width = (player1HealthVal / 200 * 100) + '%';
+    }
+
+    function startPowerupSpawner() {
+      clearInterval(powerupTimerId);
+      powerupTimerId = setInterval(() => {
+        if (gameRunning && powerups.length < 3) {
+          spawnPowerup();
+        }
+      }, 5000);
+    }
+
+    function spawnPowerup() {
+      const powerup = document.createElement('div');
+      powerup.className = 'powerup';
+      const powerupTypes = ['health', 'powerupBoost', 'shield'];
+      const type = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+      switch(type) {
+        case 'health': powerup.style.backgroundColor = '#2ecc71'; break;
+        case 'powerupBoost': powerup.style.backgroundColor = '#f39c12'; break;
+        case 'shield': powerup.style.backgroundColor = '#3498db'; break;
+      }
+      const x = 100 + Math.random() * (gameContainer.clientWidth - 200);
+      const y = 50 + Math.random() * (gameContainer.clientHeight - 100);
+      powerup.style.left = x + 'px';
+      powerup.style.top = y + 'px';
+      gameContainer.appendChild(powerup);
+      powerups.push({ element: powerup, x: x, y: y, type: type });
+      setTimeout(() => {
+        const index = powerups.findIndex(p => p.element === powerup);
+        if (index !== -1) {
+          if (powerup.parentNode) powerup.parentNode.removeChild(powerup);
+          powerups.splice(index, 1);
+        }
+      }, 10000);
+    }
+
+    function collectPowerup(player, powerup) {
+      if (powerup.type === 'health') {
+        if (player === 1) {
+          player1HealthVal = Math.min(200, player1HealthVal + 30);
+          health1.style.width = (player1HealthVal / 200 * 100) + '%';
+        } else {
+          player2HealthVal = Math.min(200, player2HealthVal + 30);
+          health2.style.width = (player2HealthVal / 200 * 100) + '%';
+        }
+      } else if (powerup.type === 'powerupBoost') {
+        if (player === 1) {
+          player1PowerupMeter = Math.min(100, player1PowerupMeter + 20);
+          powerup1Bar.style.width = player1PowerupMeter + '%';
+        } else {
+          player2PowerupMeter = Math.min(100, player2PowerupMeter + 20);
+          powerup2Bar.style.width = player2PowerupMeter + '%';
+        }
+      } else if (powerup.type === 'shield') {
+        if (player === 1 && !player1ShieldActive) {
+          player1ShieldActive = true;
+          player1Shield = 100;
+          shield1Bar.style.width = '100%';
+          shield1.style.display = 'block';
+          setTimeout(() => {
+            player1ShieldActive = false;
+            player1Shield = 0;
+            shield1Bar.style.width = '0%';
+            shield1.style.display = 'none';
+          }, 10000);
+        } else if (player === 2 && !player2ShieldActive) {
+          player2ShieldActive = true;
+          player2Shield = 100;
+          shield2Bar.style.width = '100%';
+          shield2.style.display = 'block';
+          setTimeout(() => {
+            player2ShieldActive = false;
+            player2Shield = 0;
+            shield2Bar.style.width = '0%';
+            shield2.style.display = 'none';
+          }, 10000);
+        }
+      }
+      if (powerup.element.parentNode) {
+        powerup.element.parentNode.removeChild(powerup.element);
+      }
+      const index = powerups.findIndex(p => p.element === powerup.element);
+      if (index !== -1) powerups.splice(index, 1);
+    }
+
+    function shootBullet(player, weapon) {
+      const now = Date.now();
+      if (player === 1) {
+        if (now - player1LastShot < weaponTypes[currentWeapon].cooldown) return;
+        player1LastShot = now;
+      } else {
+        if (now - player2LastShot < weaponTypes[cpuWeapon].cooldown) return;
+        player2LastShot = now;
+      }
+      let bulletX, bulletY, direction;
+      if (player === 1) {
+        bulletX = player1.offsetLeft + player1.offsetWidth;
+        bulletY = player1.offsetTop + player1.offsetHeight / 2;
+        direction = 1;
+      } else {
+        bulletX = player2.offsetLeft;
+        bulletY = player2.offsetTop + player2.offsetHeight / 2;
+        direction = -1;
+      }
+      const weaponConfig = weaponTypes[weapon];
+      if (weapon === 'spread') {
+        const count = weaponConfig.spreadCount || 3;
+        const angles = [-1, 0, 1];
+        angles.forEach(angle => {
+          createBullet(player, bulletX, bulletY, direction, weaponConfig.speed, angle, weaponConfig);
         });
+      } else {
+        createBullet(player, bulletX, bulletY, direction, weaponConfig.speed, 0, weaponConfig);
+      }
+    }
 
-        // Mouse click to shoot
-        gameContainer.addEventListener('click', () => {
-            if (gameRunning && gameMode === 'humanVsCpu') {
-                shootBullet(1);
-            }
-        });
+    function createBullet(player, x, y, direction, speed, vy, weaponConfig) {
+      const bullet = document.createElement('div');
+      bullet.className = 'bullet ' + weaponConfig.class;
+      bullet.style.backgroundColor = weaponConfig.color;
+      bullet.style.width = weaponConfig.size.width + 'px';
+      bullet.style.height = weaponConfig.size.height + 'px';
+      gameContainer.appendChild(bullet);
+      bullets.push({
+        element: bullet,
+        x: x,
+        y: y,
+        direction: direction,
+        speed: speed,
+        vy: vy,
+        damage: weaponConfig.damage,
+        explosive: weaponConfig.explosive || false,
+        powerupGain: weaponConfig.powerupGain,
+        player: player
+      });
+    }
 
-        // Keyboard controls
-        window.addEventListener('keydown', (e) => {
-            keysPressed[e.key] = true;
-            
-            // Spacebar to shoot
-            if (e.key === ' ' && gameRunning && gameMode === 'humanVsCpu') {
-                shootBullet(1);
-            }
-        });
-        
-        window.addEventListener('keyup', (e) => {
-            keysPressed[e.key] = false;
-        });
-
-        function setGameMode(mode) {
-            gameMode = mode;
-            resetGame();
-            
-            if (mode === 'humanVsCpu') {
-                gameModeDisplay.textContent = 'Mode: Human vs CPU';
-                score1.textContent = 'Human: 0';
-                score2.textContent = 'CPU: 0';
-            } else {
-                gameModeDisplay.textContent = 'Mode: CPU vs CPU';
-                score1.textContent = 'Blue: 0';
-                score2.textContent = 'Red: 0';
-            }
+    function moveBullets() {
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        const bullet = bullets[i];
+        bullet.x += bullet.direction * bullet.speed;
+        bullet.y += bullet.vy;
+        bullet.element.style.left = bullet.x + 'px';
+        bullet.element.style.top = bullet.y + 'px';
+        if (bullet.x < 0 || bullet.x > gameContainer.clientWidth) {
+          gameContainer.removeChild(bullet.element);
+          bullets.splice(i, 1);
+          continue;
         }
-
-        function startGame() {
-            if (!gameRunning) {
-                gameRunning = true;
-                gameLoopId = setInterval(gameLoop, 20);
-                startDifficultyTimer();
+        if (bullet.player === 1) {
+          if (
+            bullet.x + bullet.element.offsetWidth >= player2.offsetLeft &&
+            bullet.x <= player2.offsetLeft + player2.offsetWidth &&
+            bullet.y >= player2.offsetTop &&
+            bullet.y <= player2.offsetTop + player2.offsetHeight
+          ) {
+            createExplosion(bullet.x, bullet.y);
+            gameContainer.removeChild(bullet.element);
+            bullets.splice(i, 1);
+            let damage = bullet.damage;
+            if (player2ShieldActive) {
+              player2Shield -= damage;
+              if (player2Shield < 0) {
+                damage = -player2Shield;
+                player2Shield = 0;
+                shield2Bar.style.width = '0%';
+                shield2.style.display = 'none';
+                player2ShieldActive = false;
+              } else {
+                shield2Bar.style.width = player2Shield + '%';
+                damage = 0;
+              }
             }
+            player2HealthVal -= damage;
+            player2HealthVal = Math.max(0, player2HealthVal);
+            health2.style.width = (player2HealthVal / 200 * 100) + '%';
+            player1PowerupMeter = Math.min(100, player1PowerupMeter + bullet.powerupGain);
+            powerup1Bar.style.width = player1PowerupMeter + '%';
+            continue;
+          }
+        } else if (bullet.player === 2) {
+          if (
+            bullet.x <= player1.offsetLeft + player1.offsetWidth &&
+            bullet.x + bullet.element.offsetWidth >= player1.offsetLeft &&
+            bullet.y >= player1.offsetTop &&
+            bullet.y <= player1.offsetTop + player1.offsetHeight
+          ) {
+            createExplosion(bullet.x, bullet.y);
+            gameContainer.removeChild(bullet.element);
+            bullets.splice(i, 1);
+            let damage = bullet.damage;
+            if (player1ShieldActive) {
+              player1Shield -= damage;
+              if (player1Shield < 0) {
+                damage = -player1Shield;
+                player1Shield = 0;
+                shield1Bar.style.width = '0%';
+                shield1.style.display = 'none';
+                player1ShieldActive = false;
+              } else {
+                shield1Bar.style.width = player1Shield + '%';
+                damage = 0;
+              }
+            }
+            player1HealthVal -= damage;
+            player1HealthVal = Math.max(0, player1HealthVal);
+            health1.style.width = (player1HealthVal / 200 * 100) + '%';
+            player2PowerupMeter = Math.min(100, player2PowerupMeter + bullet.powerupGain);
+            powerup2Bar.style.width = player2PowerupMeter + '%';
+            continue;
+          }
         }
+      }
+    }
 
-        function resetGame() {
-            clearInterval(gameLoopId);
-            clearInterval(difficultyTimerId);
-            gameRunning = false;
-            player1Health = 100;
-            player2Health = 100;
-            player1Score = 0;
-            player2Score = 0;
-            player1Y = 20;
-            player2Y = 20;
-            difficultyLevel = 1;
-            difficultyTimeLeft = 20;
-            
-            // Update displays
-            difficultyDisplay.textContent = 'Difficulty: ' + difficultyLevel;
-            timerDisplay.textContent = 'Next difficulty: ' + difficultyTimeLeft + 's';
-            
-            if (gameMode === 'humanVsCpu') {
-                score1.textContent = 'Human: 0';
-                score2.textContent = 'CPU: 0';
-            } else {
-                score1.textContent = 'Blue: 0';
-                score2.textContent = 'Red: 0';
-            }
-            
-            // Remove all bullets
-            bullets.forEach(bullet => {
-                if (bullet.element.parentNode) {
-                    bullet.element.parentNode.removeChild(bullet.element);
-                }
-            });
-            bullets = [];
-            
-            // Remove all explosions
-            document.querySelectorAll('.explosion').forEach(exp => {
-                exp.parentNode.removeChild(exp);
-            });
-            
-            // Update the display
-            player1.style.bottom = player1Y + 'px';
-            player2.style.bottom = player2Y + 'px';
-            health1.style.width = '100%';
-            health2.style.width = '100%';
-            gameOver.style.display = 'none';
+    function createExplosion(x, y) {
+      const explosion = document.createElement('div');
+      explosion.className = 'explosion';
+      explosion.style.left = x + 'px';
+      explosion.style.top = y + 'px';
+      gameContainer.appendChild(explosion);
+      setTimeout(() => {
+        if (explosion.parentNode) explosion.parentNode.removeChild(explosion);
+      }, 300);
+    }
+
+    function gameLoop() {
+      if (gameMode === 'humanVsCpu' || gameMode === 'survival') {
+        moveHumanPlayer();
+      } else {
+        moveAIPlayer1();
+      }
+      moveAIPlayer2();
+      if (gameMode === 'cpuVsCpu' && Math.random() < 0.03) {
+        shootBullet(1, cpuWeapon);
+      }
+      const shootProbability = 0.02 + (difficultyLevel * 0.005);
+      if (Math.random() < shootProbability) {
+        shootBullet(2, cpuWeapon);
+      }
+      moveBullets();
+      checkPowerupCollisions();
+      checkGameOver();
+    }
+
+    function moveHumanPlayer() {
+      let moveSpeed = 5;
+      if (keysPressed['ArrowUp'] || keysPressed['w'] || touchControlsActive.up) player1Y += moveSpeed;
+      if (keysPressed['ArrowDown'] || keysPressed['s'] || touchControlsActive.down) player1Y -= moveSpeed;
+      if (player1Y < 20) player1Y = 20;
+      if (player1Y > gameContainer.clientHeight - 60) player1Y = gameContainer.clientHeight - 60;
+      player1.style.bottom = player1Y + 'px';
+      updateShieldPosition(1);
+    }
+
+    function moveAIPlayer1() {
+      if (Math.random() < 0.02) player1Direction = -player1Direction;
+      player1Y += player1Direction * 3;
+      if (player1Y < 20) { player1Y = 20; player1Direction = 1; }
+      if (player1Y > gameContainer.clientHeight - 60) { player1Y = gameContainer.clientHeight - 60; player1Direction = -1; }
+      player1.style.bottom = player1Y + 'px';
+      updateShieldPosition(1);
+    }
+
+    function moveAIPlayer2() {
+      const moveSpeed = 2 + (difficultyLevel * 0.5);
+      if (difficultyLevel >= 3) {
+        const player1Top = gameContainer.clientHeight - player1.offsetTop - player1.offsetHeight;
+        const player2Top = player2Y;
+        if (player1Top > player2Top + 10) {
+          player2Y += moveSpeed;
+        } else if (player1Top < player2Top - 10) {
+          player2Y -= moveSpeed;
+        } else {
+          if (Math.random() < 0.1) player2Direction = -player2Direction;
+          player2Y += player2Direction * moveSpeed;
         }
+      } else {
+        if (Math.random() < 0.03) player2Direction = -player2Direction;
+        player2Y += player2Direction * moveSpeed;
+      }
+      if (player2Y < 20) { player2Y = 20; player2Direction = 1; }
+      if (player2Y > gameContainer.clientHeight - 60) { player2Y = gameContainer.clientHeight - 60; player2Direction = -1; }
+      player2.style.bottom = player2Y + 'px';
+      updateShieldPosition(2);
+    }
 
-        function startDifficultyTimer() {
-            difficultyTimeLeft = 20;
-            timerDisplay.textContent = 'Next difficulty: ' + difficultyTimeLeft + 's';
-            
-            clearInterval(difficultyTimerId);
-            difficultyTimerId = setInterval(() => {
-                difficultyTimeLeft--;
-                timerDisplay.textContent = 'Next difficulty: ' + difficultyTimeLeft + 's';
-                
-                if (difficultyTimeLeft <= 0) {
-                    difficultyLevel++;
-                    difficultyDisplay.textContent = 'Difficulty: ' + difficultyLevel;
-                    difficultyTimeLeft = 20;
-                }
-            }, 1000);
+    function checkGameOver() {
+      if (player1HealthVal <= 0) {
+        gameOver.textContent = 'Player 2 wins!';
+        gameOver.style.display = 'block';
+        clearInterval(gameLoopId);
+        clearInterval(difficultyTimerId);
+        clearInterval(powerupTimerId);
+      } else if (player2HealthVal <= 0) {
+        gameOver.textContent = 'Player 1 wins!';
+        gameOver.style.display = 'block';
+        clearInterval(gameLoopId);
+        clearInterval(difficultyTimerId);
+        clearInterval(powerupTimerId);
+      }
+    }
+
+    function checkPowerupCollisions() {
+      powerups.forEach(powerup => {
+        if (
+          powerup.x >= player1.offsetLeft &&
+          powerup.x <= player1.offsetLeft + player1.offsetWidth &&
+          powerup.y >= player1.offsetTop &&
+          powerup.y <= player1.offsetTop + player1.offsetHeight
+        ) {
+          collectPowerup(1, powerup);
         }
-
-        function gameLoop() {
-            // Human controls or AI movement for player 1
-            if (gameMode === 'humanVsCpu') {
-                moveHumanPlayer();
-            } else {
-                moveAIPlayer1();
-            }
-            
-            // AI movement for player 2
-            moveAIPlayer2();
-            
-            // AI shooting
-            if (gameMode === 'cpuVsCpu' && Math.random() < 0.03) {
-                shootBullet(1);
-            }
-            
-            const shootProbability = 0.02 + (difficultyLevel * 0.005);
-            if (Math.random() < shootProbability) {
-                shootBullet(2);
-            }
-            
-            // Move bullets and check collisions
-            moveBullets();
-            
-            // Check if game is over
-            checkGameOver();
+        if (
+          powerup.x >= player2.offsetLeft &&
+          powerup.x <= player2.offsetLeft + player2.offsetWidth &&
+          powerup.y >= player2.offsetTop &&
+          powerup.y <= player2.offsetTop + player2.offsetHeight
+        ) {
+          collectPowerup(2, powerup);
         }
+      });
+    }
 
-        function moveHumanPlayer() {
-            let moveSpeed = 5;
-            
-            // Keyboard controls
-            if (keysPressed['ArrowUp'] || keysPressed['w']) {
-                player1Y += moveSpeed;
-            }
-            if (keysPressed['ArrowDown'] || keysPressed['s']) {
-                player1Y -= moveSpeed;
-            }
-            
-            // Touch controls
-            if (touchControlsActive.up) {
-                player1Y += moveSpeed;
-            }
-            if (touchControlsActive.down) {
-                player1Y -= moveSpeed;
-            }
-            
-            // Boundary check
-            if (player1Y < 20) {
-                player1Y = 20;
-            } else if (player1Y > gameContainer.clientHeight - 60) {
-                player1Y = gameContainer.clientHeight - 60;
-            }
-            
-            player1.style.bottom = player1Y + 'px';
+    function collectPowerup(player, powerup) {
+      if (powerup.type === 'health') {
+        if (player === 1) {
+          player1HealthVal = Math.min(200, player1HealthVal + 30);
+          health1.style.width = (player1HealthVal / 200 * 100) + '%';
+        } else {
+          player2HealthVal = Math.min(200, player2HealthVal + 30);
+          health2.style.width = (player2HealthVal / 200 * 100) + '%';
         }
-
-        function moveAIPlayer1() {
-            // AI movement
-            if (Math.random() < 0.02) {
-                player1Direction = -player1Direction;
-            }
-            
-            player1Y += player1Direction * 3;
-            
-            // Boundary check
-            if (player1Y < 20) {
-                player1Y = 20;
-                player1Direction = 1;
-            } else if (player1Y > gameContainer.clientHeight - 60) {
-                player1Y = gameContainer.clientHeight - 60;
-                player1Direction = -1;
-            }
-            
-            player1.style.bottom = player1Y + 'px';
+      } else if (powerup.type === 'powerupBoost') {
+        if (player === 1) {
+          player1PowerupMeter = Math.min(100, player1PowerupMeter + 20);
+          powerup1Bar.style.width = player1PowerupMeter + '%';
+        } else {
+          player2PowerupMeter = Math.min(100, player2PowerupMeter + 20);
+          powerup2Bar.style.width = player2PowerupMeter + '%';
         }
-
-        function moveAIPlayer2() {
-            // AI movement becomes smarter with difficulty
-            const moveSpeed = 2 + (difficultyLevel * 0.5);
-            
-            // Simple tracking behavior
-            if (difficultyLevel >= 3) {
-                // Track player 1's position
-                const player1Top = gameContainer.clientHeight - player1.offsetTop - player1.offsetHeight;
-                const player2Top = player2Y;
-                
-                if (player1Top > player2Top + 10) {
-                    player2Y += moveSpeed;
-                } else if (player1Top < player2Top - 10) {
-                    player2Y -= moveSpeed;
-                } else {
-                    // Random movement when close to player
-                    if (Math.random() < 0.1) {
-                        player2Direction = -player2Direction;
-                    }
-                    player2Y += player2Direction * moveSpeed;
-                }
-            } else {
-                // Random movement at lower difficulties
-                if (Math.random() < 0.03) {
-                    player2Direction = -player2Direction;
-                }
-                player2Y += player2Direction * moveSpeed;
-            }
-            
-            // Boundary check
-            if (player2Y < 20) {
-                player2Y = 20;
-                player2Direction = 1;
-            } else if (player2Y > gameContainer.clientHeight - 60) {
-                player2Y = gameContainer.clientHeight - 60;
-                player2Direction = -1;
-            }
-            
-            player2.style.bottom = player2Y + 'px';
+      } else if (powerup.type === 'shield') {
+        if (player === 1 && !player1ShieldActive) {
+          player1ShieldActive = true;
+          player1Shield = 100;
+          shield1Bar.style.width = '100%';
+          shield1.style.display = 'block';
+          setTimeout(() => {
+            player1ShieldActive = false;
+            player1Shield = 0;
+            shield1Bar.style.width = '0%';
+            shield1.style.display = 'none';
+          }, 10000);
+        } else if (player === 2 && !player2ShieldActive) {
+          player2ShieldActive = true;
+          player2Shield = 100;
+          shield2Bar.style.width = '100%';
+          shield2.style.display = 'block';
+          setTimeout(() => {
+            player2ShieldActive = false;
+            player2Shield = 0;
+            shield2Bar.style.width = '0%';
+            shield2.style.display = 'none';
+          }, 10000);
         }
-
-        function shootBullet(player) {
-            const bullet = document.createElement('div');
-            bullet.className = 'bullet';
-            gameContainer.appendChild(bullet);
-            
-            let bulletX, bulletY, bulletDirection, bulletSpeed;
-            
-            // Base bullet speed increases with difficulty for CPU
-            bulletSpeed = player === 2 ? 5 + (difficultyLevel * 0.5) : 5;
-            
-            if (player === 1) {
-                bulletX = player1.offsetLeft + player1.offsetWidth;
-                bulletY = player1.offsetTop + player1.offsetHeight / 2;
-                bulletDirection = 1;
-            } else {
-                bulletX = player2.offsetLeft;
-                bulletY = player2.offsetTop + player2.offsetHeight / 2;
-                bulletDirection = -1;
-            }
-            
-            bullet.style.left = bulletX + 'px';
-            bullet.style.top = bulletY + 'px';
-            
-            bullets.push({
-                element: bullet,
-                x: bulletX,
-                y: bulletY,
-                direction: bulletDirection,
-                player: player,
-                speed: bulletSpeed
-            });
-        }
-
-        function moveBullets() {
-            for (let i = bullets.length - 1; i >= 0; i--) {
-                const bullet = bullets[i];
-                bullet.x += bullet.direction * bullet.speed;
-                bullet.element.style.left = bullet.x + 'px';
-                
-                // Check if bullet is out of bounds
-                if (bullet.x < 0 || bullet.x > gameContainer.clientWidth) {
-                    gameContainer.removeChild(bullet.element);
-                    bullets.splice(i, 1);
-                    continue;
-                }
-                
-                // Check collision with player1
-                if (bullet.player === 2 && 
-                    bullet.x <= player1.offsetLeft + player1.offsetWidth &&
-                    bullet.x >= player1.offsetLeft &&
-                    bullet.y >= player1.offsetTop &&
-                    bullet.y <= player1.offsetTop + player1.offsetHeight) {
-                    
-                    createExplosion(bullet.x, bullet.y);
-                    gameContainer.removeChild(bullet.element);
-                    bullets.splice(i, 1);
-                    
-                    // Damage increases with difficulty
-                    const damage = 5 + (difficultyLevel * 1.5);
-                    player1Health -= damage;
-                    player1Health = Math.max(0, player1Health);
-                    health1.style.width = player1Health + '%';
-                    continue;
-                }
-                
-                // Check collision with player2
-                if (bullet.player === 1 && 
-                    bullet.x + bullet.element.offsetWidth >= player2.offsetLeft &&
-                    bullet.x <= player2.offsetLeft + player2.offsetWidth &&
-                    bullet.y >= player2.offsetTop &&
-                    bullet.y <= player2.offsetTop + player2.offsetHeight) {
-                    
-                    createExplosion(bullet.x, bullet.y);
-                    gameContainer.removeChild(bullet.element);
-                    bullets.splice(i, 1);
-                    
-                    // CPU health decreases faster at lower difficulties
-                    const damage = 10 - (difficultyLevel * 0.5);
-                    player2Health -= Math.max(5, damage);
-                    player2Health = Math.max(0, player2Health);
-                    health2.style.width = player2Health + '%';
-                    continue;
-                }
-            }
-        }
-
-        function createExplosion(x, y) {
-            const explosion = document.createElement('div');
-            explosion.className = 'explosion';
-            explosion.style.left = x + 'px';
-            explosion.style.top = y + 'px';
-            gameContainer.appendChild(explosion);
-            
-            setTimeout(() => {
-                if (explosion.parentNode) {
-                    explosion.parentNode.removeChild(explosion);
-                }
-            }, 300);
-        }
-
-        function checkGameOver() {
-            if (player1Health <= 0) {
-                player2Score++;
-                if (gameMode === 'humanVsCpu') {
-                    score2.textContent = 'CPU: ' + player2Score;
-                    endRound('CPU wins this round!');
-                } else {
-                    score2.textContent = 'Red: ' + player2Score;
-                    endRound('Red player wins this round!');
-                }
-            } else if (player2Health <= 0) {
-                player1Score++;
-                if (gameMode === 'humanVsCpu') {
-                    score1.textContent = 'Human: ' + player1Score;
-                    endRound('Human wins this round!');
-                } else {
-                    score1.textContent = 'Blue: ' + player1Score;
-                    endRound('Blue player wins this round!');
-                }
-            }
-        }
-
-        function endRound(message) {
-            clearInterval(gameLoopId);
-            clearInterval(difficultyTimerId);
-            gameRunning = false;
-            gameOver.textContent = message;
-            gameOver.style.display = 'block';
-            
-            // Reset health for next round
-            setTimeout(() => {
-                if (!gameRunning) {
-                    player1Health = 100;
-                    player2Health = 100;
-                    health1.style.width = '100%';
-                    health2.style.width = '100%';
-                    gameOver.style.display = 'none';
-                }
-            }, 2000);
-        }
-
-        // Detect if mobile
-        function checkMobile() {
-            isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            if (isMobile) {
-                document.querySelector('.mobile-controls').style.display = 'flex';
-            }
-        }
-
-        // Start the game automatically
-        window.onload = function() {
-            checkMobile();
-            resetGame();
-            setGameMode('humanVsCpu');
-        };
-    </script>
+      }
+      if (powerup.element.parentNode) powerup.element.parentNode.removeChild(powerup.element);
+      const index = powerups.findIndex(p => p.element === powerup.element);
+      if (index !== -1) powerups.splice(index, 1);
+    }
+  </script>
 </body>
 </html>
